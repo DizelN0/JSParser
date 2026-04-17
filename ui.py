@@ -29,7 +29,7 @@ class JSAnalyzerUI(ITab):
         self._main_panel = swing.JPanel(awt.BorderLayout())
 
         # Table
-        columns = ["URL", "Pattern", "Severity", "Matched", "Description"]
+        columns = ["URL", "Pattern", "Severity", "Confidence", "Category", "Matched", "Description"]
         self._table_model = swing.table.DefaultTableModel(columns, 0)
         self._table = swing.JTable(self._table_model)
         self._table.setAutoCreateRowSorter(True)
@@ -71,6 +71,8 @@ class JSAnalyzerUI(ITab):
                 f["url"],
                 f["pattern"],
                 f["severity"],
+                f.get("confidence", ""),
+                f.get("category", ""),
                 f["matched"][:50] + "..." if len(f["matched"]) > 50 else f["matched"],
                 f["description"]
             ]
