@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Hardcoded API Key",
+    "regex": "[\"']?(?:api[_-]?key|apikey|api_secret)[\"']?\\s*[:=]\\s*[\"']([a-zA-Z0-9_\\-]{20,})[\"']?",
+    "severity": "High",
+    "confidence": "medium",
+    "category": "secret",
+    "keywords": ["api", "key", "secret"],
+    "description": "Hardcoded API Key or Secret",
+    "remediation": "Remove hardcoded secrets. Use environment variables or vault."
+  },
+  {
+    "name": "JWT Token in Code",
+    "regex": "[\"'](eyJ[a-zA-Z0-9_-]*\\.eyJ[a-zA-Z0-9_-]*\\.[a-zA-Z0-9_-]*)[\"']",
+    "severity": "Medium",
+    "confidence": "high",
+    "category": "secret",
+    "keywords": ["jwt", "token", "eyJ"],
+    "description": "JWT Token found in JavaScript source",
+    "remediation": "Do not store tokens in client-side code."
+  },
+  {
+    "name": "Internal Endpoint",
+    "regex": "(?:fetch|axios|\\.open)\\s*\\(\\s*[\"']((?:https?://)?(?:internal|admin|api)[^\"']+)['\"]",
+    "severity": "Info",
+    "confidence": "low",
+    "category": "endpoint",
+    "keywords": ["fetch", "axios", "internal", "admin", "api"],
+    "description": "Potential internal or administrative endpoint",
+    "remediation": "Verify endpoint is not exposed to untrusted clients."
+  },
+  {
+    "name": "Eval/Function Constructor",
+    "regex": "\\b(eval|Function|setTimeout|setInterval)\\s*\\(",
+    "severity": "Medium",
+    "confidence": "medium",
+    "category": "dangerous",
+    "keywords": ["eval", "function", "settimeout", "setinterval"],
+    "description": "Dynamic code execution detected",
+    "remediation": "Avoid eval() and similar constructs; use safe alternatives."
+  },
+  {
+    "name": "Console Debug Leak",
+    "regex": "console\\.(log|debug|info)\\s*\\([^)]*(?:password|token|secret|key)[^)]*\\)",
+    "severity": "Low",
+    "confidence": "low",
+    "category": "debug",
+    "keywords": ["console", "log", "debug", "password", "token"],
+    "description": "Debug output may leak sensitive data",
+    "remediation": "Remove debug logging from production builds."
+  }
+]

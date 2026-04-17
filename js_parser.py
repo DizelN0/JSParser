@@ -5,6 +5,8 @@ import javax.swing as swing
 from javax.swing import SwingUtilities
 import threading
 from java.util import ArrayList
+import json
+import os
 
 class BurpExtender(IBurpExtender, IContextMenuFactory):
 
@@ -26,8 +28,8 @@ class BurpExtender(IBurpExtender, IContextMenuFactory):
         self._log("JS Parser loaded")
 
     def createMenuItems(self, invocation):
-    	menu = ArrayList()
-    	try:
+        menu = ArrayList()
+        try:
             messages = invocation.getSelectedMessages()
 
             if messages and len(messages) > 0:
@@ -70,43 +72,18 @@ class BurpExtender(IBurpExtender, IContextMenuFactory):
         SwingUtilities.invokeLater(run_analysis)
 
     def _init_patterns(self):
-        return [
-            {
-                "name": "Hardcoded API Key",
-                "regex": r'["\']?(?:api[_-]?key|apikey|api_secret)["\']?\s*[:=]\s*["\']([a-zA-Z0-9_\-]{20,})["\']?',
-                "severity": "High",
-                "description": "Hardcoded API Key",
-                "remediation": "Hardcoded API Key"
-            },
-            {
-                "name": "JWT Token in Code",
-                "regex": r'["\'](?:eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*)["\']',
-                "severity": "Medium",
-                "description": "JWT Token in Code",
-                "remediation": "JWT Token in Code"
-            },
-            {
-                "name": "Internal Endpoint",
-                "regex": r'(?:fetch|axios|\.open)\s*\(\s*["\']((?:https?://)?(?:internal|admin|api)[^"\']+)["\']',
-                "severity": "Info",
-                "description": "Internal Endpoint",
-                "remediation": "Internal Endpoint"
-            },
-            {
-                "name": "Eval/Function Constructor",
-                "regex": r'\b(eval|Function|setTimeout|setInterval)\s*\(\s*[^"\']',
-                "severity": "Medium",
-                "description": "Eval/Function Constructor",
-                "remediation": "Eval/Function Constructor"
-            },
-            {
-                "name": "Console Debug Leak",
-                "regex": r'console\.(log|debug|info)\s*\([^)]*(?:password|token|secret|key)[^)]*\)',
-                "severity": "Low",
-                "description": "----",
-                "remediation": "Console Debug Leak"
-            }
-        ]
+        path = os.path.join(os.getcwd(), "rules.json")
+
+        try:
+            with open(path, "r") as f:
+                rules = json.load(f)
+
+            self._log("Loaded {} rules".format(len(rules)))
+            return rules
+
+        except Exception as e:
+            self._log("Failed to load rules.json: {}".format(e))
+            return []
 
     def _is_javascript(self, message):
         analyzed = self.helpers.analyzeResponse(message.getResponse())
@@ -122,8 +99,13 @@ class BurpExtender(IBurpExtender, IContextMenuFactory):
     def _analyze_content(self, content, url):
         findings = []
         seen = set()
+        content_lower = content.lower()
 
         for pattern_conf in self._patterns:
+            keywords = pattern_conf.get("keywords", [])
+            if keywords:
+                if not any(k.lower() in content_lower for k in keywords):
+                    continue
             try:
                 regex = re.compile(pattern_conf["regex"], re.IGNORECASE | re.MULTILINE)
                 for match in regex.finditer(content):
@@ -139,9 +121,11 @@ class BurpExtender(IBurpExtender, IContextMenuFactory):
                     finding = {
                         "url": url,
                         "pattern": pattern_conf["name"],
-                        "severity": pattern_conf["severity"],
-                        "description": pattern_conf["description"],
-                        "remediation": pattern_conf["remediation"],
+                        "severity": pattern_conf.get("severity", "Info"),
+                        "confidence": pattern_conf.get("confidence", "unknown"),
+                        "category": pattern_conf.get("category", "general"),
+                        "description": pattern_conf.get("description", ""),
+                        "remediation": pattern_conf.get("remediation", ""),
                         "matched": match.group(0),
                         "offset": match.start(),
                         "context": self._get_context(content, match.start(), match.end())
