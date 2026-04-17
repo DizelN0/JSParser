@@ -107,10 +107,11 @@ class BurpExtender(IBurpExtender, IContextMenuFactory):
             try:
                 regex = re.compile(pattern_conf["regex"], re.IGNORECASE | re.MULTILINE)
                 for match in regex.finditer(content):
-                    finding_key = "{}:{}:{}".format(
+                    value = match.group(0)
+
+                    finding_key = "{}:{}".format(
                         pattern_conf['name'],
-                        match.start(),
-                        match.group(0)[:30]
+                        value[:50]
                     )
                     if finding_key in seen:
                         continue
