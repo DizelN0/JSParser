@@ -4,7 +4,7 @@ import re
 import javax.swing as swing
 from javax.swing import SwingUtilities
 import threading
-
+from java.util import ArrayList
 
 class BurpExtender(IBurpExtender, IContextMenuFactory):
 
@@ -26,21 +26,24 @@ class BurpExtender(IBurpExtender, IContextMenuFactory):
         self._log("JS Parser loaded")
 
     def createMenuItems(self, invocation):
-        menu_items = []
-        if invocation.getInvocationContext() in [
-            invocation.CONTEXT_MESSAGE_EDITOR_VIEW,
-            invocation.CONTEXT_MESSAGE_VIEWER_REQUEST,
-            invocation.CONTEXT_MESSAGE_VIEWER_RESPONSE,
-            invocation.CONTEXT_PROXY_HISTORY,
-            invocation.CONTEXT_TARGET_SITE_MAP_TREE,
-            invocation.CONTEXT_TARGET_SITE_MAP_TABLE
-        ]:
-            item = swing.JMenuItem(
-                "Parse JS",
-                actionPerformed=lambda x, inv=invocation: self._handle_menu_click(inv)
-            )
-            menu_items.append(item)
-        return menu_items
+    	menu = ArrayList()
+    	try:
+            messages = invocation.getSelectedMessages()
+
+            if messages and len(messages) > 0:
+                item = swing.JMenuItem("Parse JS")
+
+                def handler(event):
+                   self._handle_menu_click(invocation)
+
+                item.addActionListener(handler)
+
+                menu.add(item)
+
+        except Exception as e:
+            self._log("Menu error: {}".format(e))
+
+        return menu
 
     def _handle_menu_click(self, invocation):
         messages = invocation.getSelectedMessages()
