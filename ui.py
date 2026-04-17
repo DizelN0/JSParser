@@ -133,7 +133,7 @@ class _SeverityRenderer(swing.table.DefaultTableCellRenderer):
 class _TablePopupMenu(swing.JPopupMenu):
 
     def __init__(self, table):
-        super().__init__()
+        swing.JPopupMenu.__init__(self)
         self._table = table
         copy_item = swing.JMenuItem("Copy Row", actionPerformed=self._copy_row)
         self.add(copy_item)
