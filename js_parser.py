@@ -14,17 +14,15 @@ class BurpExtender(IBurpExtender, IContextMenuFactory):
         self.callbacks = callbacks
         self.helpers = callbacks.getHelpers()
         callbacks.setExtensionName("JS Parser")
-
-        self._patterns = self._init_patterns()
-        self._results = []
+        self.stdout = callbacks.getStdout()
         self._lock = threading.Lock()
-
+        self._results = []
         self._ui = JSAnalyzerUI(callbacks, self._on_export_request)
         callbacks.addSuiteTab(self._ui)
 
         callbacks.registerContextMenuFactory(self)
 
-        self.stdout = callbacks.getStdout()
+        self._patterns = self._init_patterns()
         self._log("JS Parser loaded")
 
     def createMenuItems(self, invocation):
@@ -69,7 +67,7 @@ class BurpExtender(IBurpExtender, IContextMenuFactory):
 
                 self._log("Analyzed: {} - {} findings".format(url, len(findings)))
 
-        SwingUtilities.invokeLater(run_analysis)
+        threading.Thread(target=run_analysis).start()
 
     def _init_patterns(self):
         path = os.path.join(os.getcwd(), "rules.json")
