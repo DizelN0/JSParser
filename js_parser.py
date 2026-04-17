@@ -61,7 +61,7 @@ class BurpExtender(IBurpExtender, IContextMenuFactory):
                     self._results.extend(findings)
                     self._ui.update_table(self._results)
 
-                self._log(f"Analyzed: {url} - {len(findings)} findings")
+                self._log("Analyzed: {} - {} findings".format(url, len(findings)))
 
         SwingUtilities.invokeLater(run_analysis)
 
@@ -123,7 +123,11 @@ class BurpExtender(IBurpExtender, IContextMenuFactory):
             try:
                 regex = re.compile(pattern_conf["regex"], re.IGNORECASE | re.MULTILINE)
                 for match in regex.finditer(content):
-                    finding_key = f"{pattern_conf['name']}:{match.start()}:{match.group(0)[:30]}"
+                    finding_key = "{}:{}:{}".format(
+                        pattern_conf['name'],
+                        match.start(),
+                        match.group(0)[:30]
+                    )
                     if finding_key in seen:
                         continue
                     seen.add(finding_key)
@@ -140,7 +144,7 @@ class BurpExtender(IBurpExtender, IContextMenuFactory):
                     }
                     findings.append(finding)
             except re.error as e:
-                self._log(f"Regex error: {e}")
+                self._log("Regex error: {}".format(e))
         return findings
 
     def _get_context(self, content, start, end, radius=100):

@@ -11,7 +11,7 @@ class JSAnalyzerUI(ITab):
 
     def __init__(self, callbacks, export_callback):
         self.callbacks = callbacks
-        self._export_callback = export_callback  # Функция для запроса экспорта
+        self._export_callback = export_callback
         self._main_panel = None
         self._table = None
         self._table_model = None
@@ -96,7 +96,7 @@ class JSAnalyzerUI(ITab):
         if path:
             swing.JOptionPane.showMessageDialog(
                 self._main_panel,
-                f"Exported {format_name} to:\n{path}",
+                "Exported {} to:\n{}".format(format_name, path),
                 "Export Complete",
                 swing.JOptionPane.INFORMATION_MESSAGE
             )
