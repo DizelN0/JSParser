@@ -3,6 +3,7 @@ from ui import JSAnalyzerUI
 import re
 import javax.swing as swing
 from javax.swing import SwingUtilities
+import threading
 
 
 class BurpExtender(IBurpExtender, IContextMenuFactory):
@@ -14,7 +15,7 @@ class BurpExtender(IBurpExtender, IContextMenuFactory):
 
         self._patterns = self._init_patterns()
         self._results = []
-        self._lock = callbacks.getLockObject()
+        self._lock = threading.Lock()
 
         self._ui = JSAnalyzerUI(callbacks, self._on_export_request)
         callbacks.addSuiteTab(self._ui)
