@@ -1,3 +1,4 @@
+// 8 RULES
 [
   {
     "name": "Hardcoded API Key",
@@ -31,7 +32,7 @@
   },
   {
     "name": "Eval/Function Constructor",
-    "regex": "\\b(eval|Function|setTimeout|setInterval)\\s*\\(",
+    "regex": "\\b(eval|Function)\\s*\\(\\s*[^\"']",
     "severity": "Medium",
     "confidence": "medium",
     "category": "dangerous",
@@ -48,5 +49,26 @@
     "keywords": ["console", "log", "debug", "password", "token"],
     "description": "Debug output may leak sensitive data",
     "remediation": "Remove debug logging from production builds."
+  },
+  {
+    "name": "AWS Access Key",
+    "regex": "AKIA[0-9A-Z]{16}",
+    "severity": "High",
+    "confidence": "high",
+    "category": "secret"
+  },
+  {
+    "name": "Google API Key",
+    "regex": "AIza[0-9A-Za-z\\-_]{35}",
+    "severity": "High",
+    "confidence": "high",
+    "category": "secret"
+  },
+  {
+    "name": "GitHub Token",
+    "regex": "ghp_[0-9a-zA-Z]{36}",
+    "severity": "High",
+    "confidence": "high",
+    "category": "secret"
   }
 ]
